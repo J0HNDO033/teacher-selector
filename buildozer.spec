@@ -7,6 +7,7 @@ source.main = main.py
 requirements = python3,kivy
 orientation = portrait
 fullscreen = 0
+version = 1.0.0
 
 # Android settings
 android.permissions = INTERNET
@@ -18,6 +19,3 @@ android.sdk = 33
 android.ndk = 25b
 ndk.api = 21
 android.archs = armeabi-v7a, arm64-v8a
-
-# Packaging
-version = 1.0.0

@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Pin to Ubuntu 22.04 to avoid breaking packages on 24.04
 
     steps:
     - name: Checkout source code
@@ -31,31 +31,38 @@ jobs:
           autoconf \
           automake \
           pkg-config \
-          libncurses5 \
-          libstdc++6 \
-          zlib1g \
+          libncurses5-dev \
           libffi-dev \
           libssl-dev \
+          zlib1g-dev \
           libsqlite3-dev \
           libjpeg-dev \
           libfreetype6-dev \
-          libpng-dev
+          libpng-dev \
+          libc6-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          x11proto-core-dev \
+          libx11-dev \
+          libxext-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxinerama-dev \
+          libxi-dev
 
-    - name: Upgrade pip and install Buildozer
+    - name: Upgrade pip and install Buildozer & dependencies
       run: |
-        python3 -m pip install --upgrade pip
-        pip install buildozer cython virtualenv
+        python3 -m pip install --upgrade pip setuptools wheel
+        pip install cython buildozer
 
     - name: Create buildozer.spec if missing
       run: |
         if [ ! -f buildozer.spec ]; then buildozer init; fi
 
-    - name: Build APK
+    - name: Accept Android SDK Licenses
+      run: |
+        mkdir -p ~/.android && echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.android/repositories.cfg
+
+    - name: Build the APK
       run: |
         buildozer android debug
-
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: teacher-selector-apk
-        path: bin/*.apk

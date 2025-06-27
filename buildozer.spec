@@ -18,3 +18,5 @@ android.sdk = 33
 android.ndk = 25b
 
 version = 1.0.0
+android.accept_sdk_license = True
+android.skip_update = False

@@ -16,7 +16,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-pip build-essential openjdk-17-jdk unzip wget git curl libstdc++6 libffi-dev libssl-dev zlib1g-dev python3-dev libncurses6 libgtk-3-0 tar
+        sudo apt install -y python3-pip build-essential \
+          openjdk-17-jdk unzip wget git curl tar
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -26,7 +27,7 @@ jobs:
     - name: Install Python packages
       run: |
         pip install --upgrade pip
-        pip install buildozer cython kivy
+        pip install buildozer cython
 
     - name: Set up Android SDK
       run: |
@@ -36,21 +37,25 @@ jobs:
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
         unzip -q tools.zip
         mv cmdline-tools latest
+
         echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
         echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
 
-    - name: Accept Android SDK licenses and install build tools
+    - name: Accept Android SDK licenses
       run: |
         mkdir -p ~/.android && touch ~/.android/repositories.cfg
-        yes | sdkmanager --licenses
-        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+
+    - name: Install SDK components
+      run: |
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Build APK
       run: |
         buildozer android debug
 
-    - name: Upload APK
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: kivy-apk

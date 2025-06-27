@@ -16,58 +16,59 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: "3.10"
 
     - name: Install system dependencies
       run: |
         sudo apt update
         sudo apt install -y \
+          python3-pip \
           build-essential \
           libssl-dev \
           libffi-dev \
           python3-dev \
-          openjdk-17-jdk \
-          unzip \
-          zip \
-          git \
-          wget \
           zlib1g-dev \
-          python3-pip \
-          ca-certificates
+          unzip \
+          openjdk-17-jdk \
+          wget \
+          git \
+          ca-certificates \
+          curl \
+          libstdc++6 \
+          libgtk-3-0
 
     - name: Install Python packages
       run: |
         python3 -m pip install --upgrade pip
-        pip install cython virtualenv buildozer
+        pip install buildozer cython
 
-    - name: Set up Android SDK (Command Line Tools)
+    - name: Download Android SDK command-line tools
       run: |
-        mkdir -p $HOME/android-sdk/cmdline-tools
-        cd $HOME/android-sdk/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
+        SDK_ROOT=$HOME/android-sdk
+        mkdir -p "$SDK_ROOT/cmdline-tools"
+        cd "$SDK_ROOT/cmdline-tools"
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
         unzip -q tools.zip
         mv cmdline-tools latest
         rm tools.zip
 
-    - name: Install Android SDK packages
+    - name: Accept licenses & install SDK packages
       env:
         ANDROID_SDK_ROOT: $HOME/android-sdk
-        PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$PATH
+        PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
       run: |
+        mkdir -p ~/.android && touch ~/.android/repositories.cfg
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Build APK
       env:
-        ANDROIDSDK: $HOME/android-sdk
-        ANDROID_NDK_HOME: $HOME/.buildozer/android/platform/android-ndk-r25b
-        ANDROID_HOME: $HOME/android-sdk
+        ANDROID_SDK_ROOT: $HOME/android-sdk
         PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
-      run: |
-        buildozer android debug
+      run: buildozer android debug
 
-    - name: Upload APK
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: kivy-app-apk
+        name: kivy-android-apk
         path: bin/*.apk

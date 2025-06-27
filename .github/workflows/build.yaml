@@ -27,25 +27,35 @@ jobs:
           zip \
           unzip \
           openjdk-17-jdk \
-          tar \
           libtool \
           autoconf \
           automake \
-          pkg-config
+          pkg-config \
+          libncurses5 \
+          libstdc++6 \
+          zlib1g \
+          libffi-dev \
+          libssl-dev \
+          libsqlite3-dev \
+          libjpeg-dev \
+          libfreetype6-dev \
+          libpng-dev
 
-    - name: Install Buildozer
+    - name: Upgrade pip and install Buildozer
       run: |
         python3 -m pip install --upgrade pip
-        pip install buildozer cython
+        pip install buildozer cython virtualenv
 
     - name: Create buildozer.spec if missing
       run: |
         if [ ! -f buildozer.spec ]; then buildozer init; fi
 
-    - name: Accept Android SDK Licenses
-      run: |
-        mkdir -p ~/.android && echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.android/repositories.cfg
-
-    - name: Build the APK
+    - name: Build APK
       run: |
         buildozer android debug
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: teacher-selector-apk
+        path: bin/*.apk

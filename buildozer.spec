@@ -4,7 +4,7 @@ package.name = teacherselector
 package.domain = org.example
 source.dir = .
 source.main = main.py
-requirements = python3,kivy
+requirements = python3,kivy,pyjnius==1.4.3,cython
 orientation = portrait
 fullscreen = 0
 version = 1.0.0

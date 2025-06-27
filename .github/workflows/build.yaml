@@ -1,68 +1,60 @@
-name: Build Kivy APK
+[app]
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+# (str) Title of your application
+title = Teacher Selector
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# (str) Package name
+package.name = teacherselector
 
-    env:
-      ANDROID_SDK_ROOT: $HOME/android-sdk
-      ANDROID_HOME:     $HOME/android-sdk
-      PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
+# (str) Package domain (reverse DNS style)
+package.domain = org.example
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+# (str) Source code where your main.py is located
+source.dir = .
 
-    - name: Install host dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y python3-pip build-essential openjdk-17-jdk \
-          unzip wget git curl tar \
-          libstdc++6 libffi-dev libssl-dev zlib1g-dev python3-dev \
-          libncurses6 libgtk-3-0
+# (str) Application version
+version = 1.0.0
 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
+# (list) Application requirements
+requirements = python3,kivy
 
-    - name: Install Buildozer & Cython
-      run: |
-        pip install --upgrade pip
-        pip install buildozer cython
+# (str) Entry point of your app
+# (use the filename of your main python script)
+entrypoint = main.py
 
-    - name: Install Android SDK Command-Line Tools
-      run: |
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        cd $ANDROID_SDK_ROOT/cmdline-tools
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cli.zip
-        unzip -q cli.zip
-        rm cli.zip
-        mv cmdline-tools latest
+# (str) Supported orientation (portrait, landscape or all)
+orientation = portrait
 
-    - name: Accept all licenses & install SDK platforms + build-tools
-      run: |
-        mkdir -p ~/.android && touch ~/.android/repositories.cfg
-        # Accept every license
-        yes | sdkmanager --licenses
-        # Install the two versions Buildozer might request (33.0.2 and 36.0.0)
-        sdkmanager "platform-tools" \
-                   "platforms;android-33" \
-                   "build-tools;33.0.2" \
-                   "build-tools;36.0.0"
+# (bool) Indicate if the application should be fullscreen or not
+fullscreen = 1
 
-    - name: Build APK with Buildozer
-      run: |
-        # Ensure Buildozer picks up our SDK rather than re-downloading
-        buildozer --verbose android debug
+# (list) Permissions to request
+android.permissions = INTERNET
 
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: kivy-apk
-        path: bin/*.apk
+# (int) Android API to target (must be installed in SDK)
+android.api = 33
+
+# (int) Minimum Android API your app supports
+android.minapi = 21
+
+# (int) Android SDK build tools version (should match what is installed)
+android.build_tools_version = 33.0.2
+
+# (str) Android NDK version to use (you can leave blank for default)
+# android.ndk = 25b
+
+# (bool) Copy libraries instead of making a .so symlink
+android.copy_libs = 1
+
+# (bool) Whether to use --private data storage (better for your app's data)
+android.private_storage = True
+
+# (str) Presplash image (optional)
+# presplash.filename = %(source.dir)s/data/presplash.png
+
+# (list) Extra source files to include (if any)
+# source.include_exts = py,png,jpg,kv,atlas
+
+# (bool) Use a debug build (True for debugging)
+# android.debug = True
+

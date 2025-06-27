@@ -2,7 +2,7 @@ name: Build Kivy APK
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -17,9 +17,9 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y python3-pip build-essential \
-          openjdk-17-jdk unzip wget git curl tar \
+          openjdk-17-jdk unzip wget git curl \
           libstdc++6 libffi-dev libssl-dev zlib1g-dev \
-          python3-dev libncurses6 libgtk-3-0
+          python3-dev libncurses6 libgtk-3-0 tar
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -50,7 +50,8 @@ jobs:
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Build APK
-      run: buildozer android debug
+      run: |
+        buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4

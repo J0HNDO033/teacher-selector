@@ -94,5 +94,11 @@ android.entrypoint = org.kivy.android.PythonActivity
 # (int) Android icon density (default 160)
 #android.icon_density = 160
 
-# (str) Android SDK build tools version to use
+# (str) Android SDK build tools version
 android.sdk_build_tools = 33.0.2
+
+# (str) Android SDK platform version
+android.sdk_platform = 33
+
+# (str) Android NDK version (should be compatible with SDK)
+android.ndk_version = 25.1.8937393

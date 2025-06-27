@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Kivy APK
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -32,19 +32,19 @@ jobs:
           git \
           wget \
           zlib1g-dev \
-          yes \
-          python3-pip
+          python3-pip \
+          ca-certificates
 
-    - name: Install Python dependencies
+    - name: Install Python packages
       run: |
-        python -m pip install --upgrade pip
-        pip install cython buildozer
+        python3 -m pip install --upgrade pip
+        pip install cython virtualenv buildozer
 
-    - name: Set up Android SDK
+    - name: Set up Android SDK (Command Line Tools)
       run: |
         mkdir -p $HOME/android-sdk/cmdline-tools
         cd $HOME/android-sdk/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O tools.zip
+        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
         unzip -q tools.zip
         mv cmdline-tools latest
         rm tools.zip
@@ -59,13 +59,15 @@ jobs:
 
     - name: Build APK
       env:
-        ANDROID_SDK_ROOT: $HOME/android-sdk
+        ANDROIDSDK: $HOME/android-sdk
+        ANDROID_NDK_HOME: $HOME/.buildozer/android/platform/android-ndk-r25b
+        ANDROID_HOME: $HOME/android-sdk
         PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
       run: |
         buildozer android debug
 
-    - name: Upload APK artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: teacher-selector-apk
+        name: kivy-app-apk
         path: bin/*.apk

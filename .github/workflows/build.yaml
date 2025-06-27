@@ -2,67 +2,61 @@ name: Build Kivy APK
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Pin to Ubuntu 22.04 to avoid breaking packages on 24.04
+    runs-on: ubuntu-latest
+    env:
+      ANDROIDSDK: ${{ github.workspace }}/android-sdk
+      ANDROIDNDK: ${{ github.workspace }}/android-ndk-r25b
+      ANDROIDAPI: 33
+      ANDROIDMINAPI: 21
 
     steps:
-    - name: Checkout source code
-      uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          python3-pip \
-          build-essential \
-          git \
-          zip \
-          unzip \
-          openjdk-17-jdk \
-          libtool \
-          autoconf \
-          automake \
-          pkg-config \
-          libncurses5-dev \
-          libffi-dev \
-          libssl-dev \
-          zlib1g-dev \
-          libsqlite3-dev \
-          libjpeg-dev \
-          libfreetype6-dev \
-          libpng-dev \
-          libc6-dev \
-          libgl1-mesa-dev \
-          libgles2-mesa-dev \
-          x11proto-core-dev \
-          libx11-dev \
-          libxext-dev \
-          libxrandr-dev \
-          libxcursor-dev \
-          libxinerama-dev \
-          libxi-dev
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install buildozer cython
 
-    - name: Upgrade pip and install Buildozer & dependencies
-      run: |
-        python3 -m pip install --upgrade pip setuptools wheel
-        pip install cython buildozer
+      - name: Download and setup Android SDK
+        run: |
+          mkdir -p $ANDROIDSDK
+          cd $ANDROIDSDK
+          # Download command for SDK tools, e.g.:
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip commandlinetools-linux-9477386_latest.zip -d cmdline-tools
+          mv cmdline-tools/cmdline-tools $ANDROIDSDK/cmdline-tools/latest
+          yes | $ANDROIDSDK/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROIDSDK "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;27.2.1240187"
 
-    - name: Create buildozer.spec if missing
-      run: |
-        if [ ! -f buildozer.spec ]; then buildozer init; fi
+      - name: Download and setup Android NDK
+        run: |
+          mkdir -p $ANDROIDNDK
+          cd $ANDROIDNDK
+          wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
+          unzip android-ndk-r25b-linux.zip
+          mv android-ndk-r25b/* .
+          rm -rf android-ndk-r25b
 
-    - name: Accept Android SDK Licenses
-      run: |
-        mkdir -p ~/.android && echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.android/repositories.cfg
+      - name: Install Apache Ant manually
+        run: |
+          wget https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.tar.gz
+          tar -xzf apache-ant-1.9.4-bin.tar.gz
+          mv apache-ant-1.9.4 $HOME/apache-ant
+          echo "$HOME/apache-ant/bin" >> $GITHUB_PATH
 
-    - name: Build the APK
-      run: |
-        buildozer android debug
+      - name: Build APK
+        run: |
+          buildozer android debug

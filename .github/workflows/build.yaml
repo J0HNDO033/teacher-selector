@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_SDK_ROOT: ${{ runner.home }}/android-sdk
+      ANDROID_SDK_ROOT: $HOME/android-sdk
 
     steps:
     - name: Checkout code
